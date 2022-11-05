@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <LangVersion>10</LangVersion>
+    </PropertyGroup>
+    
+    <ItemGroup>
+        <PackageReference Include="CommunityToolkit.HighPerformance" Version="8.0.0" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="6.0.0" />
+        <PackageReference Include="Redzen" Version="13.0.0" />
+        <PackageReference Include="SharpCompress" Version="0.32.2" />
+        <PackageReference Include="System.Text.Json" Version="6.0.5" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+            <_Parameter1>Scorpia.Desktop</_Parameter1>
+        </AssemblyAttribute>
+    </ItemGroup>
+</Project>
