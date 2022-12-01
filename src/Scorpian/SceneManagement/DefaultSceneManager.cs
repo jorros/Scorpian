@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Scorpian.Graphics;
 
@@ -72,14 +73,14 @@ public class DefaultSceneManager : SceneManager
         _cancellationTokenSource = source;
     }
 
-    internal override void Tick()
+    internal override async Task Tick()
     {
-        currentScene.Tick();
+        await currentScene.Tick();
     }
 
-    internal override void Update()
+    internal override async Task Update()
     {
-        currentScene.Update();
+        await currentScene.Update();
     }
 
     internal override void Render(TimeSpan elapsedTime)

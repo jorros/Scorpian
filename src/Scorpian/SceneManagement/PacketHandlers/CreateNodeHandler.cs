@@ -9,7 +9,7 @@ public class CreateNodeHandler : IPacketHandler
     public Type Type => typeof(CreateNodePacket);
     public NetworkMode Receiver => NetworkMode.Client;
 
-    public void Process(ISyncPacket syncPacket, NetworkedScene networkedScene, ushort senderId, NetworkedSceneManager sceneManager)
+    public void Process(ISyncPacket syncPacket, NetworkedScene networkedScene, uint senderId, NetworkedSceneManager sceneManager)
     {
         if (networkedScene is null)
         {
@@ -18,7 +18,7 @@ public class CreateNodeHandler : IPacketHandler
         
         var packet = (CreateNodePacket) syncPacket;
         
-        networkedScene.SpawnNode(packet.Node, packet.NetworkId);
+        networkedScene.SpawnNode(packet.Node, packet.NetworkId, packet.Variables);
         Console.WriteLine("Received spawn");
     }
 }

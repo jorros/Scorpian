@@ -40,7 +40,11 @@ namespace Scorpian.SDL
 		#region SDL2# Variables
 
 		/* Used by DllImport to load the native library. */
+#if __IOS__
+        private const string nativeLibName = "__Internal";
+#else
 		private const string nativeLibName = "SDL2_image";
+#endif
 
 		#endregion
 

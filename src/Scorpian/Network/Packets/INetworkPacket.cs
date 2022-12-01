@@ -4,6 +4,6 @@ namespace Scorpian.Network.Packets;
 
 public interface INetworkPacket
 {
-    void Write(Stream stream, PacketManager packetManager);
-    void Read(Stream stream, PacketManager packetManager);
+    void Write(BinaryWriter writer, PacketManager packetManager);
+    void Read(BinaryReader reader, PacketManager packetManager);
 }

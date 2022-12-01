@@ -10,19 +10,19 @@ public struct RemoteCallPacket : ISyncPacket
     public int Method { get; set; }
     public object Arguments { get; set; }
     
-    public void Write(Stream stream, PacketManager packetManager)
+    public void Write(BinaryWriter writer, PacketManager packetManager)
     {
-        stream.Write(Scene);
-        stream.Write(NodeId);
-        stream.Write(Method);
-        packetManager.Write(Arguments, stream);
+        writer.Write(Scene);
+        writer.Write(NodeId);
+        writer.Write(Method);
+        packetManager.Write(Arguments, writer);
     }
 
-    public void Read(Stream stream, PacketManager packetManager)
+    public void Read(BinaryReader reader, PacketManager packetManager)
     {
-        Scene = stream.ReadString();
-        NodeId = stream.Read<ulong>();
-        Method = stream.Read<int>();
-        Arguments = packetManager.Read(stream);
+        Scene = reader.ReadString();
+        NodeId = reader.ReadUInt64();
+        Method = reader.ReadInt32();
+        Arguments = packetManager.Read(reader);
     }
 }

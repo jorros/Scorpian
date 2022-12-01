@@ -1,5 +1,5 @@
+using System;
 using System.IO;
-using CommunityToolkit.HighPerformance;
 
 namespace Scorpian.Network.Packets;
 
@@ -7,7 +7,7 @@ public struct LoginResponsePacket : INetworkPacket
 {
     public bool Succeeded { get; set; }
     public string Reason { get; set; }
-    public ushort ClientId { get; set; }
+    public uint ClientId { get; set; }
 
     public LoginResponsePacket()
     {
@@ -15,18 +15,25 @@ public struct LoginResponsePacket : INetworkPacket
         Succeeded = false;
         ClientId = 0;
     }
-    
-    public void Write(Stream stream, PacketManager packetManager)
+
+    public LoginResponsePacket(uint clientId)
     {
-        stream.Write(Succeeded);
-        stream.Write(Reason);
-        stream.Write(ClientId);
+        Reason = string.Empty;
+        Succeeded = true;
+        ClientId = clientId;
+    }
+    
+    public void Write(BinaryWriter writer, PacketManager packetManager)
+    {
+        writer.Write(Succeeded);
+        writer.Write(Reason);
+        writer.Write(ClientId);
     }
 
-    public void Read(Stream stream, PacketManager packetManager)
+    public void Read(BinaryReader reader, PacketManager packetManager)
     {
-        Succeeded = stream.Read<bool>();
-        Reason = stream.ReadString();
-        ClientId = stream.Read<ushort>();
+        Succeeded = reader.ReadBoolean();
+        Reason = reader.ReadString();
+        ClientId = reader.ReadUInt32();
     }
 }

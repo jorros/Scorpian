@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Scorpian.Network;
 using Scorpian.Network.Packets;
@@ -16,7 +17,7 @@ public class ScenePacketManager
         _networkManager = networkManager;
     }
 
-    internal void Process(ISyncPacket packet, NetworkedSceneManager sceneManager, ushort senderId)
+    internal void Process(ISyncPacket packet, NetworkedSceneManager sceneManager, uint senderId)
     {
         var scene = sceneManager.GetLoadedScene(packet.Scene) as NetworkedScene;
         

@@ -72,6 +72,15 @@ public sealed class NetworkedFieldManager
         return dict;
     }
 
+    public void SetVariables(IDictionary<int, object> variables)
+    {
+        foreach (var var in variables)
+        {
+            dynamic field = _networkedVars[var.Key].GetValue(_target);
+            field.Accept(var.Value);
+        }
+    }
+
     public void CommitVariables()
     {
         foreach (var netVar in _networkedVars)

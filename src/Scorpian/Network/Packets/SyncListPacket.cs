@@ -16,78 +16,78 @@ public struct SyncListPacket : ISyncPacket
     public int Index { get; set; }
     public List<object> List { get; set; }
     
-    public void Write(Stream stream, PacketManager packetManager)
+    public void Write(BinaryWriter writer, PacketManager packetManager)
     {
-        stream.Write(Scene);
-        stream.Write(NodeId);
-        stream.Write(Field);
+        writer.Write(Scene);
+        writer.Write(NodeId);
+        writer.Write(Field);
         
-        stream.Write((byte)Action);
+        writer.Write((byte)Action);
 
         switch (Action)
         {
             case NetworkedListAction.Add:
-                packetManager.Write(Value, stream);
+                packetManager.Write(Value, writer);
                 break;
             
             case NetworkedListAction.Insert:
-                packetManager.Write(Value, stream);
-                stream.Write(Index);
+                packetManager.Write(Value, writer);
+                writer.Write(Index);
                 break;
             
             case NetworkedListAction.Remove:
-                packetManager.Write(Value, stream);
+                packetManager.Write(Value, writer);
                 break;
             
             case NetworkedListAction.Set:
-                packetManager.Write(Value, stream);
-                stream.Write(Index);
+                packetManager.Write(Value, writer);
+                writer.Write(Index);
                 break;
             
             case NetworkedListAction.RemoveAt:
-                stream.Write(Index);
+                writer.Write(Index);
                 break;
             
             case NetworkedListAction.Sync:
-                packetManager.Write(List, stream);
+                packetManager.Write(List, writer);
                 break;
         }
     }
 
-    public void Read(Stream stream, PacketManager packetManager)
+    public void Read(BinaryReader reader, PacketManager packetManager)
     {
-        Scene = stream.ReadString();
-        NodeId = stream.Read<ulong>();
-        Field = stream.Read<int>();
+        Scene = reader.ReadString();
+        NodeId = reader.ReadUInt64();
+        Field = reader.ReadInt32();
         
-        Action = (NetworkedListAction)stream.Read<byte>();
+        Action = (NetworkedListAction)reader.ReadByte();
 
         switch (Action)
         {
             case NetworkedListAction.Add:
-                Value = packetManager.Read(stream);
+                Value = packetManager.Read(reader);
                 break;
             
             case NetworkedListAction.Insert:
-                Value = packetManager.Read(stream);
-                Index = stream.Read<int>();
+                Value = packetManager.Read(reader);
+                Index = reader.ReadInt32();
                 break;
             
             case NetworkedListAction.Remove:
-                Value = packetManager.Read(stream);
+                Value = packetManager.Read(reader);
                 break;
             
             case NetworkedListAction.Set:
-                Value = packetManager.Read(stream);
-                Index = stream.Read<int>();
+                Value = packetManager.Read(reader);
+                Index = reader.ReadInt32();
                 break;
             
             case NetworkedListAction.RemoveAt:
-                Index = stream.Read<int>();
+                Index = reader.ReadInt32();
                 break;
             
             case NetworkedListAction.Sync:
-                List = (List<object>)packetManager.Read(stream);
+                List = (List<object>)packetManager.Read(reader);
                 break;
         }
     }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Scorpian.Asset;
@@ -78,33 +79,33 @@ public abstract class Scene : IDisposable
         OnRender(context);
     }
 
-    internal virtual void Update()
+    internal virtual async Task Update()
     {
-        OnUpdate();
+        await OnUpdate();
 
         foreach (var node in Nodes.Values)
         {
             foreach (var component in node.Components)
             {
-                component.Update();
+                await component.Update();
             }
 
-            node.Update();
+            await node.Update();
         }
     }
 
-    internal void Tick()
+    internal async Task Tick()
     {
-        OnTick();
+        await OnTick();
 
         foreach (var node in Nodes.Values)
         {
             foreach (var component in node.Components)
             {
-                component.Tick();
+                await component.Tick();
             }
             
-            node.Tick();
+            await node.Tick();
         }
     }
 
@@ -130,20 +131,23 @@ public abstract class Scene : IDisposable
 
     protected abstract void OnLoad(AssetManager assetManager);
 
-    protected virtual void OnTick()
+    protected virtual Task OnTick()
     {
+        return Task.CompletedTask;
     }
 
-    protected virtual void OnUpdate()
+    protected virtual Task OnUpdate()
     {
+        return Task.CompletedTask;
     }
 
     protected virtual void OnRender(RenderContext context)
     {
     }
 
-    protected virtual void OnLeave()
+    protected virtual Task OnLeave()
     {
+        return Task.CompletedTask;
     }
 
     public virtual void Dispose()

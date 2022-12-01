@@ -16,7 +16,7 @@ public class SyncVarHandler : IPacketHandler
         _logger = logger;
     }
     
-    public void Process(ISyncPacket syncPacket, NetworkedScene networkedScene, ushort senderId, NetworkedSceneManager sceneManager)
+    public void Process(ISyncPacket syncPacket, NetworkedScene networkedScene, uint senderId, NetworkedSceneManager sceneManager)
     {
         if (networkedScene is null)
         {

@@ -22,7 +22,7 @@ public class RpcManager
         _serverRpcs = RetrieveRpcs(target.GetType(), typeof(ServerRpcAttribute));
     }
 
-    public void Invoke<T>(string name, T args, ushort clientId = 0)
+    public void Invoke<T>(string name, T args, uint? clientId = null)
     {
         _networkManager.Send(new RemoteCallPacket
         {

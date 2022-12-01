@@ -4,5 +4,10 @@ namespace Scorpian.Network;
 
 public class UserDisconnectedEventArgs : EventArgs
 {
-    public ushort ClientId { get; set; }
+    public UserDisconnectedEventArgs(uint clientId)
+    {
+        ClientId = clientId;
+    }
+    
+    public uint ClientId { get; set; }
 }

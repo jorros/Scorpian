@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net7.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\src\Scorpian\Scorpian.csproj" />
+      <ProjectReference Include="..\Scorpian.Sample\Scorpian.Sample.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="..\Content\Sample.pack">
+        <Link>Content\Sample.pack</Link>
+      </Content>
+    </ItemGroup>
+
+</Project>

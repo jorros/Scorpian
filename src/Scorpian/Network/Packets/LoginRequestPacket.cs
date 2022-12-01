@@ -2,17 +2,22 @@ using System.IO;
 
 namespace Scorpian.Network.Packets;
 
-public class LoginRequestPacket : INetworkPacket
+public struct LoginRequestPacket : INetworkPacket
 {
     public string Auth { get; set; }
-    
-    public void Write(Stream stream, PacketManager packetManager)
+
+    public LoginRequestPacket(string auth)
     {
-        stream.Write(Auth ?? string.Empty);
+        Auth = auth;
+    }
+    
+    public void Write(BinaryWriter writer, PacketManager packetManager)
+    {
+        writer.Write(Auth ?? string.Empty);
     }
 
-    public void Read(Stream stream, PacketManager packetManager)
+    public void Read(BinaryReader reader, PacketManager packetManager)
     {
-        Auth = stream.ReadString();
+        Auth = reader.ReadString();
     }
 }

@@ -40,7 +40,11 @@ namespace Scorpian.SDL
 		#region SDL2# Variables
 
 		/* Used by DllImport to load the native library. */
+#if __IOS__
+        private const string nativeLibName = "__Internal";
+#else
 		private const string nativeLibName = "SDL2_ttf";
+#endif
 
 		#endregion
 
@@ -76,18 +80,18 @@ namespace Scorpian.SDL
 			X.patch = SDL_TTF_PATCHLEVEL;
 		}
 
-		[DllImport(nativeLibName, EntryPoint = "TTF_LinkedVersion", CallingConvention = CallingConvention.Cdecl)]
-		private static extern IntPtr INTERNAL_TTF_LinkedVersion();
-		public static SDL.SDL_version TTF_LinkedVersion()
-		{
-			SDL.SDL_version result;
-			IntPtr result_ptr = INTERNAL_TTF_LinkedVersion();
-			result = (SDL.SDL_version) Marshal.PtrToStructure(
-				result_ptr,
-				typeof(SDL.SDL_version)
-			);
-			return result;
-		}
+		// [DllImport(nativeLibName, EntryPoint = "TTF_LinkedVersion", CallingConvention = CallingConvention.Cdecl)]
+		// private static extern IntPtr INTERNAL_TTF_LinkedVersion();
+		// public static SDL.SDL_version TTF_LinkedVersion()
+		// {
+		// 	SDL.SDL_version result;
+		// 	IntPtr result_ptr = INTERNAL_TTF_LinkedVersion();
+		// 	result = (SDL.SDL_version) Marshal.PtrToStructure(
+		// 		result_ptr,
+		// 		typeof(SDL.SDL_version)
+		// 	);
+		// 	return result;
+		// }
 
 		[DllImport(nativeLibName, CallingConvention = CallingConvention.Cdecl)]
 		public static extern void TTF_ByteSwappedUNICODE(int swapped);
@@ -729,12 +733,12 @@ namespace Scorpian.SDL
 		public static extern int TTF_WasInit();
 
 		/* font refers to a TTF_Font* */
-		[DllImport(nativeLibName, CallingConvention = CallingConvention.Cdecl)]
-		public static extern int SDL_GetFontKerningSize(
-			IntPtr font,
-			int prev_index,
-			int index
-		);
+		// [DllImport(nativeLibName, CallingConvention = CallingConvention.Cdecl)]
+		// public static extern int SDL_GetFontKerningSize(
+		// 	IntPtr font,
+		// 	int prev_index,
+		// 	int index
+		// );
 
 		/* font refers to a TTF_Font*
 		 * Only available in 2.0.15 or higher.

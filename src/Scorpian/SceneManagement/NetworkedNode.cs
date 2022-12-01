@@ -1,3 +1,5 @@
+using System;
+using System.Threading.Tasks;
 using Scorpian.Network;
 using Scorpian.Network.Protocol;
 using Scorpian.Network.RPC;
@@ -20,26 +22,26 @@ public abstract class NetworkedNode : Node
         NetworkedFieldManager = new NetworkedFieldManager(NetworkManager, this);
     }
     
-    public void Invoke<T>(string name, T args, ushort clientId = 0)
+    public void Invoke<T>(string name, T args, uint? clientId = null)
     {
         RpcManager.Invoke(name, args, clientId);
     }
 
-    internal override void Update()
+    internal override async Task Update()
     {
         if (NetworkManager.IsClient)
         {
-            base.Update();
+            await base.Update();
 
             return;
         }
 
         NetworkedFieldManager.Update();
 
-        base.Update();
+        await base.Update();
     }
 
-    public void Invoke(string name, ushort clientId = 0)
+    public void Invoke(string name, uint? clientId = null)
     {
         Invoke<object>(name, null, clientId);
     }

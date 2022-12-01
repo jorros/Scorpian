@@ -6,7 +6,7 @@ public class NetworkedVar<T>
 {
     public event EventHandler<VarChangedEventArgs<T>> OnChange;
 
-    public NetworkedVar(Func<ushort, bool> shouldReceive = null, T value = default)
+    public NetworkedVar(Func<uint, bool> shouldReceive = null, T value = default)
     {
         _value = value;
         this.shouldReceive = shouldReceive;
@@ -43,7 +43,7 @@ public class NetworkedVar<T>
     }
 
     private T _value;
-    internal readonly Func<ushort, bool> shouldReceive;
+    internal readonly Func<uint, bool> shouldReceive;
     private T _proposedValue;
 
     internal bool IsDirty { get; private set; }

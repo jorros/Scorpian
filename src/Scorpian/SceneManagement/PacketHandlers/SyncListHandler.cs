@@ -9,7 +9,7 @@ public class SyncListHandler : IPacketHandler
     public Type Type => typeof(SyncListPacket);
     public NetworkMode Receiver => NetworkMode.Client | NetworkMode.Server;
     
-    public void Process(ISyncPacket syncPacket, NetworkedScene networkedScene, ushort senderId, NetworkedSceneManager sceneManager)
+    public void Process(ISyncPacket syncPacket, NetworkedScene networkedScene, uint senderId, NetworkedSceneManager sceneManager)
     {
         if (networkedScene is null)
         {

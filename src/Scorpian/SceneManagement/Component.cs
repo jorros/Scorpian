@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Scorpian.Asset;
 using Scorpian.Graphics;
@@ -17,30 +18,34 @@ public abstract class Component : IDisposable
 
     internal ulong lastRender;
 
-    public virtual void OnCleanUp()
+    public virtual Task OnCleanUp()
     {
+        return Task.CompletedTask;
     }
     
-    public virtual void OnInit()
+    public virtual Task OnInit()
     {
+        return Task.CompletedTask;
     }
     
-    public virtual void OnUpdate()
+    public virtual Task OnUpdate()
     {
+        return Task.CompletedTask;
     }
 
-    internal virtual void Update()
+    internal virtual async Task Update()
     {
-        OnUpdate();
+        await OnUpdate();
     }
 
-    public virtual void OnTick()
+    public virtual Task OnTick()
     {
+        return Task.CompletedTask;
     }
 
-    internal virtual void Tick()
+    internal virtual async Task Tick()
     {
-        OnTick();
+        await OnTick();
     }
     
     public virtual void OnRender(RenderContext context, float dT)

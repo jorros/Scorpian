@@ -10,19 +10,19 @@ public struct SyncVarPacket : ISyncPacket
     public int Field { get; set; }
     public object Value { get; set; }
 
-    public void Write(Stream stream, PacketManager packetManager)
+    public void Write(BinaryWriter writer, PacketManager packetManager)
     {
-        stream.Write(Scene);
-        stream.Write(NodeId);
-        stream.Write(Field);
-        packetManager.Write(Value, stream);
+        writer.Write(Scene);
+        writer.Write(NodeId);
+        writer.Write(Field);
+        packetManager.Write(Value, writer);
     }
 
-    public void Read(Stream stream, PacketManager packetManager)
+    public void Read(BinaryReader reader, PacketManager packetManager)
     {
-        Scene = stream.ReadString();
-        NodeId = stream.Read<ulong>();
-        Field = stream.Read<int>();
-        Value = packetManager.Read(stream);
+        Scene = reader.ReadString();
+        NodeId = reader.ReadUInt64();
+        Field = reader.ReadInt32();
+        Value = packetManager.Read(reader);
     }
 }

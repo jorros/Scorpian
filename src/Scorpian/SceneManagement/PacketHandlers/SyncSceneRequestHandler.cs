@@ -15,7 +15,7 @@ public class SyncSceneRequestHandler : IPacketHandler
         _networkManager = networkManager;
     }
     
-    public void Process(ISyncPacket syncPacket, NetworkedScene networkedScene, ushort senderId, NetworkedSceneManager sceneManager)
+    public void Process(ISyncPacket syncPacket, NetworkedScene networkedScene, uint senderId, NetworkedSceneManager sceneManager)
     {
         if (networkedScene is null)
         {

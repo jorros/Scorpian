@@ -17,7 +17,7 @@ public class RemoteCallHandler : IPacketHandler
         _networkManager = networkManager;
     }
     
-    public void Process(ISyncPacket syncPacket, NetworkedScene networkedScene, ushort senderId, NetworkedSceneManager sceneManager)
+    public void Process(ISyncPacket syncPacket, NetworkedScene networkedScene, uint senderId, NetworkedSceneManager sceneManager)
     {
         if (networkedScene is null)
         {
@@ -42,7 +42,7 @@ public class RemoteCallHandler : IPacketHandler
         ProcessNode(packet, node, senderId);
     }
 
-    private void ProcessNode(RemoteCallPacket packet, NetworkedNode node, ushort senderId)
+    private void ProcessNode(RemoteCallPacket packet, NetworkedNode node, uint senderId)
     {
         var method = node.RpcManager.Get(packet.Method, _networkManager.IsClient);
 
@@ -61,7 +61,7 @@ public class RemoteCallHandler : IPacketHandler
         method.Invoke(node, args);
     }
 
-    private void ProcessScene(RemoteCallPacket packet, NetworkedScene scene, ushort senderId)
+    private void ProcessScene(RemoteCallPacket packet, NetworkedScene scene, uint senderId)
     {
         var method = scene.RpcManager.Get(packet.Method, _networkManager.IsClient);
 

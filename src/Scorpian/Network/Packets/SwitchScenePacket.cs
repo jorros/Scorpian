@@ -6,13 +6,13 @@ public struct SwitchScenePacket : ISyncPacket
 {
     public string Scene { get; set; }
     
-    public void Write(Stream stream, PacketManager packetManager)
+    public void Write(BinaryWriter writer, PacketManager packetManager)
     {
-        stream.Write(Scene);
+        writer.Write(Scene);
     }
 
-    public void Read(Stream stream, PacketManager packetManager)
+    public void Read(BinaryReader reader, PacketManager packetManager)
     {
-        Scene = stream.ReadString();
+        Scene = reader.ReadString();
     }
 }

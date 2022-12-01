@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Scorpian.Network;
 using Scorpian.Network.Packets;
@@ -46,13 +47,7 @@ public abstract class NetworkedScene : Scene
             //     Scene = GetType().Name,
             //     NodeId = _lastNetworkId
             // }).ToArray(),
-            Variables = node.NetworkedFieldManager.GetVariables().Select(x => new SyncVarPacket
-            {
-                Field = x.Key,
-                NodeId = _lastNetworkId,
-                Scene = GetType().Name,
-                Value = x.Value
-            }).ToArray()
+            Variables = GetSyncVarPackets(node)
         };
         NetworkManager.Send(packet);
 
@@ -81,14 +76,16 @@ public abstract class NetworkedScene : Scene
         });
     }
 
-    internal void SpawnNode(string name, ulong id)
+    internal void SpawnNode(string name, ulong id, SyncVarPacket[] varPackets)
     {
         foreach (var node in from nodeType in Settings.NetworkedNodes
                  where nodeType.Name == name
                  select CreateNode(nodeType) as NetworkedNode)
         {
-            node?.Create(id);
-            node?.OnInit();
+            node.Create(id);
+            ApplySyncVarPackets(node, varPackets);
+            
+            node.OnInit();
 
             networkedNodes.Add(id, node);
             break;
@@ -100,6 +97,29 @@ public abstract class NetworkedScene : Scene
         networkedNodes.TryGetValue(id, out var node);
 
         return node;
+    }
+
+    private SyncVarPacket[] GetSyncVarPackets(NetworkedNode node)
+    {
+        return node.NetworkedFieldManager.GetVariables().Select(x => new SyncVarPacket
+        {
+            Field = x.Key,
+            NodeId = _lastNetworkId,
+            Scene = GetType().Name,
+            Value = x.Value
+        }).ToArray();
+    }
+
+    private void ApplySyncVarPackets(NetworkedNode node, SyncVarPacket[] packets)
+    {
+        var variables = new Dictionary<int, object>();
+
+        foreach (var packet in packets)
+        {
+            variables[packet.Field] = packet.Value;
+        }
+        
+        node.NetworkedFieldManager.SetVariables(variables);
     }
 
     private void OnUserConnect(object sender, UserConnectedEventArgs e)
@@ -126,30 +146,30 @@ public abstract class NetworkedScene : Scene
         }
     }
 
-    internal override void Update()
+    internal override async Task Update()
     {
         if (NetworkManager.IsClient)
         {
-            base.Update();
+            await base.Update();
 
             return;
         }
         
         NetworkedFieldManager.Update();
 
-        base.Update();
+        await base.Update();
     }
 
     protected virtual void ServerOnLoad()
     {
     }
 
-    public void Invoke<T>(string name, T args, ushort clientId = 0)
+    public void Invoke<T>(string name, T args, uint? clientId = null)
     {
         RpcManager.Invoke(name, args, clientId);
     }
 
-    public void Invoke(string name, ushort clientId = 0)
+    public void Invoke(string name, uint? clientId = null)
     {
         Invoke<object>(name, null, clientId);
     }

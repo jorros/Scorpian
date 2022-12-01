@@ -10,5 +10,5 @@ public interface IPacketHandler
     
     NetworkMode Receiver { get; }
 
-    void Process(ISyncPacket syncPacket, NetworkedScene networkedScene, ushort senderId, NetworkedSceneManager sceneManager);
+    void Process(ISyncPacket syncPacket, NetworkedScene networkedScene, uint senderId, NetworkedSceneManager sceneManager);
 }

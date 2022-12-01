@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
@@ -31,13 +32,10 @@ public abstract class Engine
     private EngineSettings _settings;
     protected abstract void Init(IServiceCollection services, List<Type> networkedNodes);
 
-    protected abstract void Load(IServiceProvider serviceProvider);
+    protected abstract Task Load(IServiceProvider serviceProvider);
 
     public IServiceProvider ServiceProvider => _serviceProvider;
-
-    [UnconditionalSuppressMessage("Trimming",
-        "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
-        Justification = "Requires referenced packets anyways")]
+    
     protected void AddNetworkPacketsFrom(Assembly assembly)
     {
         foreach (var type in assembly.GetTypes().Where(t => t.IsAssignableTo(typeof(INetworkPacket)) && !t.IsInterface))
@@ -51,113 +49,143 @@ public abstract class Engine
         _settings.Authentication = auth;
     }
 
-    public void Run(EngineSettings settings, IntPtr? viewHandler = null)
+    private static Engine _engine;
+    private static EngineSettings _engineSettings;
+
+    // public unsafe void Run(EngineSettings settings, string[] argv)
+    // {
+    //     _engine = this;
+    //     _engineSettings = settings;
+    //
+    //     delegate* unmanaged[Cdecl]<int, IntPtr, int> unmanagedPtr = (delegate* unmanaged[Cdecl]<int, IntPtr, int>)&RunUIKit;
+    //     SDL_UIKitRunApp(argv.Length, IntPtr.Zero, unmanagedPtr);
+    // }
+    //
+    // [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvCdecl) })]
+    // private static int RunUIKit(int argc, IntPtr argv)
+    // {
+    //     _engine.Run(_engineSettings).Wait();
+    //
+    //     return 0;
+    // }
+
+    public async Task Run(EngineSettings settings, IntPtr? viewHandler = null)
     {
-        var services = new ServiceCollection();
-
-        services.AddLogging(builder =>
+        try
         {
-            builder.AddConsole(opt => opt.LogToStandardErrorThreshold = LogLevel.Error);
-            builder.SetMinimumLevel(LogLevel.Debug);
-        });
 
-        _settings = settings;
-        services.AddSingleton(_ => settings);
 
-        services.AddSingleton<UserDataManager>();
-        services.AddSingleton<EventManager>();
+            var services = new ServiceCollection();
 
-        if (!settings.Headless)
-        {
-            services.AddSingleton<GraphicsManager>();
-            services.AddSingleton<AssetManager>();
-            services.AddSingleton<RenderContext>();
-            services.AddSingleton<FontMarkupReader>();
-
-            services.AddSingleton<IAssetLoader, SpriteLoader>();
-            services.AddSingleton<IAssetLoader, FontLoader>();
-
-            services.AddSingleton<LibgdxSpriteSheetParser>();
-        }
-
-        if (settings.NetworkEnabled)
-        {
-            services.AddSingleton<NetworkManager>();
-            services.AddSingleton<PacketManager>();
-
-            services.AddSingleton<SceneManager, NetworkedSceneManager>();
-            services.AddSingleton<ScenePacketManager>();
-
-            AddNetworkPacketsFrom(typeof(Engine).Assembly);
-            services.RegisterAllTypes<IPacketHandler>(new[] {typeof(Engine).Assembly});
-        }
-        else
-        {
-            services.AddSingleton<SceneManager, DefaultSceneManager>();
-        }
-
-        Init(services, settings.NetworkedNodes);
-
-        _serviceProvider = services.BuildServiceProvider();
-
-        if (settings.NetworkEnabled)
-        {
-            var networkManager = _serviceProvider.GetRequiredService<NetworkManager>();
-            networkManager.Start();
-        }
-
-        var graphicsManager = _serviceProvider.GetService<GraphicsManager>();
-        var sceneManager = _serviceProvider.GetRequiredService<SceneManager>();
-        var assetManager = _serviceProvider.GetService<AssetManager>();
-        var userDataManager = _serviceProvider.GetRequiredService<UserDataManager>();
-        var renderContext = _serviceProvider.GetService<RenderContext>();
-        var logger = _serviceProvider.GetRequiredService<ILogger<Engine>>();
-
-        var running = new CancellationTokenSource();
-        sceneManager.SetCancellationToken(running);
-
-        userDataManager.Load();
-
-        if (!settings.Headless)
-        {
-            graphicsManager?.Init(viewHandler);
-            renderContext?.Init();
-
-            var highRes = graphicsManager?.IsHighRes();
-
-            var assetLoaders = _serviceProvider.GetServices<IAssetLoader>();
-            assetManager?.Init(assetLoaders, highRes ?? false);
-        }
-
-        Load(_serviceProvider);
-
-        StartUpdate(logger, running.Token);
-        StartTick(settings, logger, running.Token);
-
-        if (settings.Headless)
-        {
-            while (!running.IsCancellationRequested)
+            services.AddLogging(builder =>
             {
-                settings.HeadlessLoopAction?.Invoke();
-                Thread.Sleep(100);
+                builder.AddConsole(opt => opt.LogToStandardErrorThreshold = LogLevel.Error);
+                builder.SetMinimumLevel(LogLevel.Debug);
+            });
+
+            _settings = settings;
+            services.AddSingleton(_ => settings);
+
+            services.AddSingleton<UserDataManager>();
+            services.AddSingleton<EventManager>();
+
+            if (!settings.Headless)
+            {
+                services.AddSingleton<GraphicsManager>();
+                services.AddSingleton<AssetManager>();
+                services.AddSingleton<RenderContext>();
+                services.AddSingleton<FontMarkupReader>();
+
+                services.AddSingleton<IAssetLoader, SpriteLoader>();
+                services.AddSingleton<IAssetLoader, FontLoader>();
+
+                services.AddSingleton<LibgdxSpriteSheetParser>();
             }
 
-            var networkManager = _serviceProvider.GetRequiredService<NetworkManager>();
-            networkManager.Stop();
+            if (settings.NetworkEnabled)
+            {
+                services.AddSingleton<NetworkManager>();
+                services.AddSingleton<PacketManager>();
+                services.AddSingleton<NetworkQueue>();
+                services.AddSingleton<LiteConnectionManager>();
 
-            return;
+                services.AddSingleton<SceneManager, NetworkedSceneManager>();
+                services.AddSingleton<ScenePacketManager>();
+
+                AddNetworkPacketsFrom(typeof(Engine).Assembly);
+                services.RegisterAllTypes<IPacketHandler>(new[] {typeof(Engine).Assembly});
+            }
+            else
+            {
+                services.AddSingleton<SceneManager, DefaultSceneManager>();
+            }
+
+            Init(services, settings.NetworkedNodes);
+
+            _serviceProvider = services.BuildServiceProvider();
+
+            if (settings.NetworkEnabled)
+            {
+                var networkManager = _serviceProvider.GetRequiredService<NetworkManager>();
+                await networkManager.Start();
+            }
+
+            var graphicsManager = _serviceProvider.GetService<GraphicsManager>();
+            var sceneManager = _serviceProvider.GetRequiredService<SceneManager>();
+            var assetManager = _serviceProvider.GetService<AssetManager>();
+            var userDataManager = _serviceProvider.GetRequiredService<UserDataManager>();
+            var renderContext = _serviceProvider.GetService<RenderContext>();
+            var logger = _serviceProvider.GetRequiredService<ILogger<Engine>>();
+
+            var running = new CancellationTokenSource();
+            sceneManager.SetCancellationToken(running);
+
+            userDataManager.Load();
+
+            if (!settings.Headless)
+            {
+                graphicsManager?.Init(viewHandler);
+                renderContext?.Init();
+
+                var highRes = graphicsManager?.IsHighRes();
+
+                var assetLoaders = _serviceProvider.GetServices<IAssetLoader>();
+                assetManager?.Init(assetLoaders, highRes ?? false);
+            }
+
+            await Load(_serviceProvider);
+
+            StartUpdate(logger, running.Token);
+            StartTick(settings, logger, running.Token);
+
+            if (settings.Headless)
+            {
+                while (!running.IsCancellationRequested)
+                {
+                    settings.HeadlessLoopAction?.Invoke();
+                    Thread.Sleep(100);
+                }
+
+                var networkManager = _serviceProvider.GetRequiredService<NetworkManager>();
+                await networkManager.Stop();
+
+                return;
+            }
+
+            StartRender(graphicsManager, sceneManager, running);
+
+            graphicsManager?.Quit();
         }
-
-        StartRender(graphicsManager, sceneManager, running);
-
-        graphicsManager?.Quit();
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine(ex);
+        }
     }
 
     private void StartTick(EngineSettings settings, ILogger logger, CancellationToken token)
     {
         var cap = 1000 / (double) settings.TicksPerSecond;
         var sceneManager = _serviceProvider.GetRequiredService<SceneManager>();
-        var networkManager = _serviceProvider.GetService<NetworkManager>();
 
         Task.Run(async () =>
         {
@@ -165,11 +193,9 @@ public abstract class Engine
             {
                 var start = SDL_GetPerformanceCounter();
 
-                networkManager?.UpdateStatus();
-
                 try
                 {
-                    sceneManager.Tick();
+                    await sceneManager.Tick().ConfigureAwait(false);
                 }
                 catch (Exception e)
                 {
@@ -187,6 +213,7 @@ public abstract class Engine
     {
         var stopwatch = new Stopwatch();
         var sceneManager = _serviceProvider.GetRequiredService<SceneManager>();
+        var networkManager = _serviceProvider.GetRequiredService<NetworkManager>();
 
         Task.Run(async () =>
         {
@@ -197,8 +224,9 @@ public abstract class Engine
                     stopwatch.Start();
 
                     Input.UpdateMouseState();
+                    networkManager.RunQueue();
 
-                    sceneManager.Update();
+                    await sceneManager.Update();
 
                     await Task.Delay((int) Math.Floor(Math.Max(1000 / 30.0 - stopwatch.ElapsedMilliseconds, 0)), token);
 

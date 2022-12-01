@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Scorpian.Network;
 using Scorpian.Network.Packets;
@@ -30,7 +31,7 @@ public class NetworkedSceneManager : DefaultSceneManager
             return;
         }
 
-        _scenePacketManager.Process(syncPacket, this, e.SenderId);
+        _scenePacketManager.Process(syncPacket, this, e.ClientId);
     }
 
     public override T Load<T>()
@@ -66,8 +67,13 @@ public class NetworkedSceneManager : DefaultSceneManager
         base.Switch(scene, unloadCurrent);
     }
 
-    internal override void Update()
+    internal override async Task Update()
     {
-        (currentScene as NetworkedScene)?.Update();
+        if (currentScene is not NetworkedScene scene)
+        {
+            return;
+        }
+        
+        await scene.Update();
     }
 }
