@@ -26,4 +26,9 @@ public class Content
     {
         return new Content(label);
     }
+    
+    public static implicit operator Content(HorizontalGridLayout label)
+    {
+        return new Content(label);
+    }
 }

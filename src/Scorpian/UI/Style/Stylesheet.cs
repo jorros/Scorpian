@@ -57,13 +57,22 @@ public class Stylesheet
     }
     
     #region ProgressBar
-    public ProgressBarStyle CreateProgressBarStyle(string? name, string backgroundSprite, string fillSprite)
+    public ProgressBarStyle CreateProgressBarStyle(string? name, string fillSprite, string? backgroundSprite = null, string? foregroundSprite = null)
     {
         var style = new ProgressBarStyle
         {
-            Background = _assetManager.Get<Sprite>(backgroundSprite),
             Fill = _assetManager.Get<Sprite>(fillSprite)
         };
+
+        if (backgroundSprite is not null)
+        {
+            style.Background = _assetManager.Get<Sprite>(backgroundSprite);
+        }
+
+        if (foregroundSprite is not null)
+        {
+            style.Foreground = _assetManager.Get<Sprite>(foregroundSprite);
+        }
 
         if (name is null)
         {
